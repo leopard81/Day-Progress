@@ -1,4 +1,4 @@
-var isTesting = true;
+var isTesting = false;
 
 
 const width = 125
@@ -17,7 +17,7 @@ const colorLightGray = "#efefef";
 var now = new Date();
 
 if(isTesting){
-    now = new Date(2021,10,3, 18,1,0)
+    now = new Date(2021,5,24, 18,28,0)
 }
 var weekday = now.getDay();
 var currentHour = now.getHours();
@@ -26,10 +26,10 @@ const minutes = now.getMinutes()
 var isItTheWeekend = weekday == 0 || weekday == 6;
 var isItLunchTime = currentHour == 13;
     
-    const workTotalHours = 9;
-    const workStartTime = 9;
-    const workEndingTime = 18 - 9;
-    const workCurrentTime = currentHour - 9
+    const workTotalHours = 9 *60;
+    const workStartTime = 9 *60;
+    const workEndingTime = (18 *60) - (9 *60);
+    const workCurrentTime = (currentHour *60) + minutes - (9 *60)
 
 
 
@@ -42,47 +42,59 @@ StartApp();
 
 Script.setWidget(w)
 Script.complete()
-w.presentLarge()
+w.presentMedium()
 
 
 
 
 
 function StartApp(){
+    //4th Quarter
     CreateTitle(getQuarter(), colorBlue, 13, 0)
-    if (isItTheWeekend) {
+    if (isItTheWeekend && false) {
         CreateTitle("It's the weekend", colorGreen)
     } else {
-        CreateTitle(getWeekDayString() + " | Last update: " + now.toISOString().split('T')[0] + " at " +now.toLocaleTimeString(), colorLightGray, 8)
+
+        //last update string
+        CreateTitle(getWeekDayString() + (isTesting ? " | Last update: " + now.toISOString().split('T')[0] + " at " +now.toLocaleTimeString() : ""), colorLightGray, 8)
         if(currentHour < 9){
+            //work count down
             CreateTitle(getTimeRemainingUntilWorkMessage(), colorYellow)
         } else {
-            CreateTitle("Work Day Progress")
-            //working here
+
+            CreateTitle("Day Progress", colorBlue, 9,0)
+            CreateTitle("9am"+createSpaces(33)+"6pm", colorLightGray, 9,1)
             CreateProgressBar(workTotalHours, workCurrentTime, colorGreen, colorRed)
-            CreateTitle(getProgressSpace(getPercent(workCurrentTime,workTotalHours))+ getPercent(workCurrentTime,workTotalHours) + "%", colorLightGray, 10, 0)
-            w.addSpacer(2)
+            var percentage = getPercent(workCurrentTime,workTotalHours, 100);
+            CreateTitle(getProgressSpace(percentage,5)+ percentage + "%", colorLightGray, 7, 0)
+
+            
+            if(percentage >= 100){
+                CreateTitle("Day completed", colorGreen)
+            }
         }
-        w.addSpacer(3)
     }
 
     if (!isItLunchTime) {
-        CreateTitle("This week", colorBlue, 9, 3)
+        CreateTitle("This week", colorBlue, 9, 0)
+                    CreateTitle("Sun"+createSpaces(35)+"Sat", colorLightGray, 9,1)
         CreateProgressBar(7, (weekday + 1) == 1 ? 7 : weekday + 1)
+
 
         CreateTitle("This year", colorBlue, 9, 3)
         CreateProgressBar(365, getDayOfYear())
-        CreateTitle(getRatio(getDayOfYear(), 365 ), colorLightGray, 9)
+        var percentage = getPercent(getDayOfYear(),365, 100);
+        CreateTitle(getProgressSpace(percentage,6)+ percentage + "%", colorLightGray, 7, 0)
+        CreateTitle(getProgressSpace(percentage,6)+ getQuarter(), colorLightGray, 7, 6)
+        CreateTitle("Day " +getDayOfYear() + " of " + 365 , colorLightGray, 6)
     } else {
         CreateTitle("Lunch time", colorGreen, 20, 6);
     }
 }
 
-function getProgressSpace(number){
-  log("number:  " + number);
-    log("number2:  " + (number/10)*5);
+function getProgressSpace(number, multiplier = 4){
   
- return createSpaces((number/10)*4);
+ return createSpaces((number/10)*multiplier);
 }
 
 function createSpaces(number){
@@ -127,8 +139,13 @@ function GetCurrentTime(){
   return time;
 }
 
-function getPercent(SmallNumber, BigNumber){
-  return (parseInt((SmallNumber / BigNumber) * 100));
+function getPercent(SmallNumber, BigNumber, maxNumber){
+    var percent = (parseInt((SmallNumber / BigNumber) * 100));
+
+    if(maxNumber != null && percent > maxNumber){
+        return maxNumber;
+    }
+    return percent;
 }
 function getRatio(firstNumber, secondNumber){
   return firstNumber + "/" + secondNumber;
