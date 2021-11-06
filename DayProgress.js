@@ -2,15 +2,19 @@ const width = 125
 const h = 5
 const w = new ListWidget()
 w.backgroundColor = new Color("#222222")
+
 const colorBlue = "#00ced1";
 const colorGreen = "#00dd2f";
 const colorRed = "#B94E48";
 const colorYellow = "#f0e000";
 const colorGray = "#48484b";
 const colorLightGray = "#efefef";
+
 const now = new Date()
 var weekday = now.getDay();
+var currentHour = now.getHours();
 const minutes = now.getMinutes()
+
 
 StartApp();
 Script.setWidget(w)
@@ -31,20 +35,27 @@ function StartApp(){
         CreateTitle("It's the weekend", colorGreen)
     } else {
         CreateTitle(getWeekDayString() + " | Last update: " + GetCurrentTime(), colorLightGray, 8)
+        if(currentHour <= 9){
+            CreateTitle(getTimeRemainingUntilWorkMessage(), colorYellow)
+        } else {
+            CreateTitle("Day Progress")
+            getWorkRemainingTimeBar();
+        }
         getTimeRemainingWidget()
         w.addSpacer(3)
     }
 
     if (!isItLunchTime()) {
         CreateTitle("This week", colorBlue, 9, 3)
-
         getwidget(7, (weekday + 1) == 1 ? 7 : weekday + 1)
-        CreateTitle("This year", colorBlue, 9, 3)
 
+        CreateTitle("This year", colorBlue, 9, 3)
         getwidget(12, now.getMonth() + 1)
     } else {
         CreateTitle("Lunch time", colorGreen, 20, 6);
     }
+
+
 }
 
 
@@ -64,21 +75,14 @@ function getQuarter() {
     }
     return message;
 }
-
-function getTimeRemainingWidget() {
-    var currentHour = now.getHours();
-    if (currentHour <= 9) {
-        var message = "Work starting in " + (9 - currentHour) + " hour(s)";
-        CreateTitle(message, colorYellow)
-    } else {
-        CreateTitle("Day Progress")
-        const imgw = w.addImage(createProgress(18 - 9, currentHour - 9, colorGreen, colorRed))
-        imgw.imageSize = new Size(width, h)
-        CreateTitle(CreatePercent((currentHour - 9),(18 - 9)), colorLightGray, 10, 0)
-        w.addSpacer(2)
-    }
+function getTimeRemainingUntilWorkMessage(){
+    return "Work starting in " + (9 - currentHour) + " hour(s)";
 }
-
+function getWorkRemainingTimeBar() {
+    CreateProgressBar(18 - 9, currentHour - 9, colorGreen, colorRed)
+    CreateTitle(CreatePercent((currentHour - 9),(18 - 9)), colorLightGray, 10, 0)
+    w.addSpacer(2)
+}
 
 
 
@@ -98,7 +102,10 @@ function CreateTitle(str, color = colorBlue, size = 13, space = 6) {
     titlew.font = Font.boldSystemFont(size)
     w.addSpacer(space)
 }
-
+function CreateProgressBar(total, havegone, barColor, backgroundColor) {
+    const imgw = w.addImage(drawProgressBar(total, havegone, barColor, backgroundColor))
+    imgw.imageSize = new Size(width, h)
+}
 
 function isItLunchTime() {
     var time = now.getHours();
@@ -114,13 +121,11 @@ function getWeekDayString() {
 }
 
 function getwidget(total, haveGone) {
-    const imgw = w.addImage(createProgress(total, haveGone, colorGreen, colorRed))
-    imgw.imageSize = new Size(width, h)
+    CreateProgressBar(total, haveGone, colorGreen, colorRed)
     CreateTitle(CreatePercent(haveGone,total), colorLightGray, 10, 0)
     w.addSpacer(6)
 }
-
-function createProgress(total, havegone, barColor, backgroundColor) {
+function drawProgressBar(total, havegone, barColor, backgroundColor) {
     log(havegone / total);
     const context = new DrawContext()
     context.size = new Size(width, h)
