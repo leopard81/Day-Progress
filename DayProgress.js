@@ -84,6 +84,8 @@ function StartApp(){
         CreateTitle("This week", colorBlue, 9, 0)
                     CreateTitle("Sun"+createSpaces(35)+"Sat", colorLightGray, 9,1)
         CreateProgressBar(6, weekday)
+        log(weekday)
+        CreateTitle(getProgressSpace(weekday,80)+ getWeekDayString().substring(0,3), colorLightGray, 7, 0)
 
 
         CreateTitle("This year", colorBlue, 9, 3)
@@ -99,6 +101,7 @@ function getProgressSpace(number, multiplier = 4){
   
  return createSpaces((number/10)*multiplier);
 }
+
 
 function createSpaces(number){
     var spaceString = "";
