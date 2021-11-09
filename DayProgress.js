@@ -17,7 +17,7 @@ const colorLightGray = "#efefef";
 var now = new Date();
 
 if(isTesting){
-    now = new Date(2021,5,24, 18,28,0)
+    now = new Date(2021,5,24, 13,55,0)
 }
 var weekday = now.getDay();
 var currentHour = now.getHours();
@@ -25,6 +25,7 @@ const minutes = now.getMinutes()
 
 var isItTheWeekend = weekday == 0 || weekday == 6;
 var isItLunchTime = currentHour == 13;
+var isItWorkOutTime = currentHour == 18;
     
     const workTotalHours = 9 *60;
     const workStartTime = 9 *60;
@@ -56,7 +57,7 @@ function StartApp(){
     } else {
 
         //last update string
-        CreateTitle(getWeekDayString() + (isTesting ? " | Last update: " + now.toISOString().split('T')[0] + " at " +now.toLocaleTimeString() : ""), colorLightGray, 8)
+        CreateTitle(getWeekDayString() + (isTesting || true ? " | Last update: " + now.toISOString().split('T')[0] + " at " +now.toLocaleTimeString() : ""), colorLightGray, 8)
         if(currentHour < 9){
             //work count down
             CreateTitle(getTimeRemainingUntilWorkMessage(), colorYellow)
@@ -68,27 +69,29 @@ function StartApp(){
             var percentage = getPercent(workCurrentTime,workTotalHours, 100);
             CreateTitle(getProgressSpace(percentage,5)+ percentage + "%", colorLightGray, 7, 0)
 
-            
             if(percentage >= 100){
                 CreateTitle("Day completed", colorGreen)
             }
         }
     }
 
-    if (!isItLunchTime) {
+    if (isItLunchTime) {
+              CreateTitle("Lunch time", colorGreen, 20, 6);
+              CreateProgressBar(60, minutes)
+    } else if(isItWorkOutTime){
+              CreateTitle("Work out time", colorGreen, 15, 6);
+    } else {
         CreateTitle("This week", colorBlue, 9, 0)
                     CreateTitle("Sun"+createSpaces(35)+"Sat", colorLightGray, 9,1)
-        CreateProgressBar(7, (weekday + 1) == 1 ? 7 : weekday + 1)
+        CreateProgressBar(6, weekday)
 
 
         CreateTitle("This year", colorBlue, 9, 3)
         CreateProgressBar(365, getDayOfYear())
         var percentage = getPercent(getDayOfYear(),365, 100);
         CreateTitle(getProgressSpace(percentage,6)+ percentage + "%", colorLightGray, 7, 0)
-        CreateTitle(getProgressSpace(percentage,6)+ getQuarter(), colorLightGray, 7, 6)
-        CreateTitle("Day " +getDayOfYear() + " of " + 365 , colorLightGray, 6)
-    } else {
-        CreateTitle("Lunch time", colorGreen, 20, 6);
+        CreateTitle(getProgressSpace(percentage,6)+ getQuarter(), colorLightGray, 7, 3)
+        CreateTitle("Day " +getDayOfYear() + " of " + 365 + " | " + (365-getDayOfYear())+" days remaining this year.", colorLightGray , 6)
     }
 }
 
@@ -120,7 +123,7 @@ function getQuarter() {
     return message;
 }
 function getTimeRemainingUntilWorkMessage(){
-    return "Work starting in " + (9 - currentHour) + " hour(s)";
+    return "Work starts in " + ((9*60)- (currentHour*60+minutes))+ " minutes(s)";
 }
 
 
