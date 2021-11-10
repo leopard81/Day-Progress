@@ -7,6 +7,7 @@ const w = new ListWidget()
 w.backgroundColor = new Color("#222222")
 
 const colorBlue = "#00ced1";
+const colorDarkBlue = "#006a6b";
 const colorGreen = "#00dd2f";
 const colorRed = "#B94E48";
 const colorYellow = "#f0e000";
@@ -21,19 +22,27 @@ if(isTesting){
 }
 var weekday = now.getDay();
 var currentHour = now.getHours();
-const minutes = now.getMinutes()
+const minutesUntilNextHour = now.getMinutes() // for this hour
+var currentTimeInMinutes = currentHour *60 + minutesUntilNextHour;
+
+var hourPlayTimeStart = 18;var hourPlayTimeEnd = 23;
+// Flex time                    = 8 am - 9 am               = 1 hour
+// work time                    = 9 am - 1 pm & 2 pm - 5 pm = 7 hours
+// work out                     = 5 pm - 6 pm               = 1 hour
+// play time                    = 6 pm - 11 pm              = 5 hours
+// watch tv and go to sleep     = 11 pm - 8 am              = 9 hours
+
+
 
 var isItTheWeekend = weekday == 0 || weekday == 6;
 var isItLunchTime = currentHour == 13;
-var isItWorkOutTime = currentHour == 18;
+var isItWorkOutTime = currentHour == 17;
+var isItPlayTime = currentHour > hourPlayTimeStart && currentHour <  hourPlayTimeEnd;
     
-    const workTotalHours = 9 *60;
-    const workStartTime = 9 *60;
-    const workEndingTime = (18 *60) - (9 *60);
-    const workCurrentTime = (currentHour *60) + minutes - (9 *60)
-
-
-
+const workTotalHours = 9 *60;
+const workStartTime = 9 *60;
+const workEndingTime = (17 *60) - (9 *60);
+const workCurrentTime = (currentHour *60) + minutesUntilNextHour - (9 *60)
 
 
 
@@ -43,7 +52,7 @@ StartApp();
 
 Script.setWidget(w)
 Script.complete()
-w.presentMedium()
+w.presentLarge()
 
 
 
@@ -74,13 +83,34 @@ function StartApp(){
             }
         }
     }
-
+    // LUNCH TIME
     if (isItLunchTime) {
-              CreateTitle("Lunch time", colorGreen, 20, 6);
-              CreateProgressBar(60, minutes)
+              CreateTitle("Lunch time", colorGreen, 15, 6);
+              CreateProgressBar(60, minutesUntilNextHour)
+
+    // WORK OUT TIME
     } else if(isItWorkOutTime){
               CreateTitle("Work out time", colorGreen, 15, 6);
-    } else {
+              CreateProgressBar(60, minutesUntilNextHour)
+
+    // PLAY TIME
+    } else if(isItPlayTime){
+             CreateTitle("It's Play Time!", colorGreen, 15, 6);
+             
+             // TODO: show indicator on time progress
+             //CreateProgressBar(total, havegone, barColor = colorGreen, backgroundColor = colorRed)
+             // total = end*60min - start*6min
+             // havegone = time in minutes - start*60min
+             // barColor = colorGreen
+             // backgroundcolor = colorblue
+             
+             log("total: " + (hourPlayTimeEnd*60 - hourPlayTimeStart*60))
+             log("Current: " + (currentTimeInMinutes - hourPlayTimeStart*60))
+             CreateProgressBar((hourPlayTimeEnd*60 - hourPlayTimeStart*60), (currentTimeInMinutes - hourPlayTimeStart*60)  
+                , colorGreen, colorDarkBlue)
+             CreateTitle("6pm" + createSpaces(20)+"11pm")
+    }else
+    {
         CreateTitle("This week", colorBlue, 9, 0)
                     CreateTitle("Sun"+createSpaces(35)+"Sat", colorLightGray, 9,1)
         CreateProgressBar(6, weekday)
@@ -126,7 +156,7 @@ function getQuarter() {
     return message;
 }
 function getTimeRemainingUntilWorkMessage(){
-    return "Work starts in " + ((9*60)- (currentHour*60+minutes))+ " minutes(s)";
+    return "Work starts in " + ((9*60)- (currentHour*60+minutesUntilNextHour))+ " minutes(s)";
 }
 
 
